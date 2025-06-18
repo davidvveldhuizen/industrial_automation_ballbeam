@@ -16,8 +16,12 @@ float Ballz::get_average(float newpos){
   return sum/SIZE;
 }
 
-float Ballz::get_pos(){
-  float pos = 0.07*analogRead(potpin)-24.;
+float Ballz::get_pos_raw(){
+  return 0.07*analogRead(potpin)-24.;
+}
+
+float Ballz::get_pos_avr(){
+  float pos = get_pos_raw();
   
   if (pos > -3 || pos < 35){
     if (pos < 0) pos = 0;

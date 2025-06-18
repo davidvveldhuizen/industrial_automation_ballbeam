@@ -13,11 +13,12 @@ void  PID::set_setpoint(float p){
 
 float PID::get_pid_output(float input, float dt){
   
-  float error =  setpoint - input;
-  if (abs(error) < 2) error = 0;
+  error =  setpoint - input;
+  if (abs(error) < 1) error = 0;
 
   error_sum += error * dt;
   error_sum = min(max(-10, error_sum), 10);
+
 
   float dir = (error-last_error)/dt;
   float output=  (error*P) + (dir*D) + (error_sum * I);

@@ -10,6 +10,7 @@ class Ballz {
     int potpin;
     Ballz(int pin);
 
-    float get_pos();
+    float get_pos_raw();
+    float get_pos_avr();
     float get_average(float newpos);
 };

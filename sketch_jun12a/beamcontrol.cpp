@@ -2,7 +2,7 @@
 #include "beamcontrol.h"
 #include "PID.h"
 
-BeamControl::BeamControl(int _steppin, int _dirpin, int _potpin){
+BeamControl::BeamControl(int _steppin, int _dirpin, int _potpin): pid(0,0,0){
   steppin = _steppin;
   dirpin = _dirpin;
   potpin = _potpin;
@@ -32,7 +32,7 @@ float BeamControl::get_angle()
 void BeamControl::update(float dt)
   {
     current_angle = get_angle();
-    int error = (target_angle-current_angle);
+    error = (target_angle-current_angle);
     if (abs(error) < 1) error = 0;
     int output =  error * 70;
 

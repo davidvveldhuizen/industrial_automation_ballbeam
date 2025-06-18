@@ -1,53 +1,73 @@
+import tkinter as tk
+from tkinter import ttk
 import serial
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from collections import deque
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from widgits import Graph
 
-# Serial config
-PORT = 'COM4'  # Change to your port
+# --- Serial config ---
+PORT = 'COM4'
 BAUD = 115200
-
 ser = serial.Serial(PORT, BAUD, timeout=1)
 
-# Settings
-max_len = 100
-data1 = deque([0]*max_len, maxlen=max_len)
-data2 = deque([0]*max_len, maxlen=max_len)
-data3 = deque([0]*max_len, maxlen=max_len)
+# Optional: Color constant for dark theme
+WORKSPACE_BG = "#1e1e1e"
 
-# Set up subplots
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
-line1, = ax1.plot(data1, label="beam angle", color='r')
-line3, = ax1.plot(data3, label="target angle", color='b')
-line2, = ax2.plot(data2, label="ball position", color='g')
+# --- Main GUI ---
+root = tk.Tk()
+root.title("Live PID Dashboard")
+root.configure(bg=WORKSPACE_BG)
 
-ax1.set_ylim(-30, 30)  # Adjust based on your expected value range
-ax2.set_ylim(0,30)
-for ax in (ax1, ax2):
-    ax.legend(loc="upper left")
-    ax.grid(True)
+# Graphs
+graph1 = Graph(root, title="Beam & Target Angle", ylabel="Angle (°)", min_value=-30, max_value=30)
+graph1.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+graph1.add_line("beam angle")
+graph1.add_line("target angle")
 
-def update(frame):
+graph2 = Graph(root, title="Ball Position", ylabel="Position", min_value=-15 , max_value=30)
+graph2.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+graph2.add_line("ball pos avr")
+graph2.add_line("ball pos raw")
+
+# Command entry
+frame = ttk.Frame(root)
+frame.pack(fill=tk.X, padx=10, pady=5)
+
+entry = ttk.Entry(frame)
+entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+def send_command(event=None):
+    cmd = entry.get().strip()
+    if cmd:
+        ser.write((cmd + '\n').encode())
+        entry.delete(0, tk.END)
+
+ttk.Button(frame, text="Send", command=send_command).pack(side=tk.LEFT)
+root.bind("<Return>", send_command)
+
+# --- Periodic serial reader ---
+def poll_serial():
     if ser.in_waiting:
         try:
             raw = ser.readline().decode().strip()
             parts = raw.split(',')
-            if len(parts) == 3:
+            #print(parts)
+            if len(parts) == 4:
                 v1 = float(parts[0])
                 v2 = float(parts[1])
                 v3 = float(parts[2])
-                data1.append(v1)
-                data2.append(v2)
-                data3.append(v3)
-                line1.set_ydata(data1)
-                line2.set_ydata(data2)
-                line3.set_ydata(data3)
-                for line, data in zip((line1, line2, line3), (data1, data2, data3)):
-                    line.set_xdata(range(len(data)))
-        except:
-            pass
-    return line1, line2, line3
+                v4 = float(parts[3])
+                
+                
+                graph1.add_value(v1, 0)  # Beam angle
+                graph1.add_value(v2, 1)  # Target angle (overlayed)
+                graph2.add_value(v3, 0)  # Ball position
+                graph2.add_value(v4, 1)
+            
+        except Exception as e:
+            print(f"Error: {e}")
+    root.after(50, poll_serial)
 
-ani = animation.FuncAnimation(fig, update, interval=50)
-plt.tight_layout()
-plt.show()
+poll_serial()
+root.mainloop()

@@ -4,9 +4,9 @@
 #include "PID.h"
 #include "string.h"
 
-BeamControl beam(2, 3, A0);
+BeamControl beam(2, 3, A10);
 Ballz ballz(A1);
-PID pid(0.2, 0, 0);
+PID pid(0.2, 0, 2);
 
 void setup()
 {
@@ -34,7 +34,7 @@ void loop()
   if (t > timer)
   {
     timer += interval;
-    float pos = ballz.get_pos();
+    float pos = ballz.get_pos_avr();
     float output = pid.get_pid_output(pos, dt);
 
     //output = min(max(-30,output),30);
@@ -47,13 +47,13 @@ void loop()
 
       liston_for_commands();
 
-      //Serial.print(beam.current_angle);
+      Serial.print(beam.get_angle());
       //Serial.print(",-30,30,");
       //Serial.print(",-5,40,");
       //Serial.print(", ballz pos: ");
-      //Serial.print(",");
-      //Serial.print(pos);
-      //Serial.print(",");
+      Serial.print(",");
+      Serial.print(output);
+      Serial.print(",");
       //Serial.print(", output: ");
       //Serial.print(", ");
 
@@ -61,10 +61,12 @@ void loop()
       //Serial.print(", ");
       //int a[3] = {1,2,3};
       //Serial.print(a);
-      Serial.println(analogRead(ballz.potpin));
+      Serial.print(pos);
+      Serial.print(",");
+      Serial.println(pid.error);
     }
   }
-
+ 
   beam.update(dt);
 }
 
@@ -81,6 +83,7 @@ void liston_for_commands(){
       case 'I': pid.I = value; break;
       case 'D': pid.D = value; break;
       case 'O': beam.angle_offset += value; break;
+      case 'S': pid.set_setpoint(value); break;
       case '?':
         Serial.print("P: ");
         Serial.print(pid.P);

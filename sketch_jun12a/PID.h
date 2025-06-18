@@ -10,6 +10,7 @@ class PID {
   float setpoint;
   float last_error;
   float error_sum;
+  float error;
 
   PID(float p, float i, float d);
 

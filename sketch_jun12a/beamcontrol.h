@@ -13,7 +13,10 @@ public:
   int potpin;
   AccelStepper stepper;
 
-  float angle_offset = 278;
+  int error;
+
+  float angle_offset = 130;
+  PID pid;
 
   BeamControl(int _steppin, int _dirpin, int _potpin);
   void set_angle(int angle);
