@@ -8,6 +8,7 @@ class Ballz {
     float sum;
   public:
     int potpin;
+    float offset=-19.;
     Ballz(int pin);
 
     float get_pos_raw();

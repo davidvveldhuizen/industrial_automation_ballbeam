@@ -15,7 +15,7 @@ public:
 
   int error;
 
-  float angle_offset = 130;
+  float angle_offset = 276.5;
   PID pid;
 
   BeamControl(int _steppin, int _dirpin, int _potpin);

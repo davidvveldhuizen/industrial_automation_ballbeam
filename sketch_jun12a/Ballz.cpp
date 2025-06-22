@@ -17,7 +17,7 @@ float Ballz::get_average(float newpos){
 }
 
 float Ballz::get_pos_raw(){
-  return 0.07*analogRead(potpin)-24.;
+  return 0.07*analogRead(potpin)+offset;
 }
 
 float Ballz::get_pos_avr(){

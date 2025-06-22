@@ -4,15 +4,18 @@
 #include "PID.h"
 #include "string.h"
 
-BeamControl beam(2, 3, A10);
-Ballz ballz(A1);
-PID pid(0.2, 0, 2);
+#define step 25
+
+BeamControl beam(13, 21, A11);
+Ballz ballz(A13);
+PID pid(0.3, 0, 8);
 
 void setup()
 {
   Serial.begin(115200);
   beam.set_angle(-30);
   pid.set_setpoint(15);
+  pinMode(step,OUTPUT);
 }
 
 unsigned long t = micros();
@@ -39,8 +42,8 @@ void loop()
 
     //output = min(max(-30,output),30);
     beam.set_angle(output);
-    //beam.set_angle(15);
-
+    //beam.set_angle(0);
+ 
     debug_index ++;
     if (debug_index > debug_interval){
       debug_index = 0;
@@ -48,6 +51,7 @@ void loop()
       liston_for_commands();
 
       Serial.print(beam.get_angle());
+      //Serial.print(analogRead(beam.potpin));
       //Serial.print(",-30,30,");
       //Serial.print(",-5,40,");
       //Serial.print(", ballz pos: ");
@@ -63,10 +67,10 @@ void loop()
       //Serial.print(a);
       Serial.print(pos);
       Serial.print(",");
-      Serial.println(pid.error);
+
+      Serial.println(ballz.get_pos_raw());
     }
   }
- 
   beam.update(dt);
 }
 
@@ -74,15 +78,16 @@ void liston_for_commands(){
   if (Serial.available() > 0) {
 
     String data = Serial.readString();
-    
+
     char type = data.charAt(0);
     float value = data.substring(1).toFloat();
-    
+
     switch (type) {
       case 'P': pid.P = value; break;
       case 'I': pid.I = value; break;
       case 'D': pid.D = value; break;
       case 'O': beam.angle_offset += value; break;
+      case 'o': ballz.offset += value; break;
       case 'S': pid.set_setpoint(value); break;
       case '?':
         Serial.print("P: ");
@@ -92,7 +97,9 @@ void liston_for_commands(){
         Serial.print(" D: ");
         Serial.print(pid.D);
         Serial.print(" angle offset: ");
-        Serial.println(beam.angle_offset);
+        Serial.print(beam.angle_offset);
+        Serial.print(" pos offset: ");
+        Serial.println(ballz.offset);
       default: Serial.println("Invalid input"); return;
     }
   }
