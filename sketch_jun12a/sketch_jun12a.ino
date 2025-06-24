@@ -54,6 +54,7 @@ void modbus_setup(){
 
   // configure a single coil at address 0x00
   modbusTCPServer.configureCoils(0x00, 22);
+  modbusTCPServer.configureHoldingRegisters(0x00,20);
 
   EthernetClient client = ethServer.available();
   
@@ -72,7 +73,8 @@ void setup()
   beam.set_angle(-30);
   pid.set_setpoint(15);
   pinMode(17, OUTPUT);
-  digitalWrite(17, 1);
+
+  digitalWrite(17, 0);
   modbus_setup();
 }
 
@@ -138,7 +140,8 @@ void loop()
 
         float pos = ballz.get_pos_avr();
         float output = pid.get_pid_output(pos, dt);
-
+        int posmodbus = pos;
+       // modbusTCPServer.holdingRegisterWrite(0x00,posmodbus);
         //output = min(max(-30,output),30);
         if (run){
           beam.set_angle(output);

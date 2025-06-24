@@ -3,7 +3,10 @@
 
 class BeamControl{
 private:
-  int steps = 200;
+  static const int SIZE = 3;
+  float buffer[SIZE] = {0};
+  int index = 0;
+  float sum;
 public:
   float current_angle;
   float target_angle;
@@ -22,6 +25,7 @@ public:
   BeamControl(int _steppin, int _dirpin, int _potpin, int _enablepin);
   void set_angle(int angle);
   float get_angle();
+  float get_avr_angle();
   void update(float dt);
   void enable();
   void disable();

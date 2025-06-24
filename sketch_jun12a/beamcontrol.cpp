@@ -22,8 +22,6 @@ BeamControl::BeamControl(int _steppin, int _dirpin, int _potpin, int _enablepin)
 void BeamControl::set_angle(int angle)
   {
     target_angle = angle;
-    //stepper.moveTo((angle*100)+angle_offset);
-    //pid.set_setpoint(angle);
   }
 
 float BeamControl::get_angle()
@@ -31,9 +29,20 @@ float BeamControl::get_angle()
     return -0.35 * (float)analogRead(potpin) + angle_offset;
   }
 
+float BeamControl::get_avr_angle(){
+  float new_angle = get_angle();
+  sum -= buffer[index];
+  buffer[index] = new_angle;
+  sum += new_angle;
+
+  index = (index + 1) % SIZE;
+
+  return sum/SIZE;
+}
+
 void BeamControl::update(float dt)
   {
-    current_angle = get_angle();
+    current_angle = get_avr_angle();
     error = (target_angle-current_angle);
     if (abs(error) < 1) error = 0;
     int output =  error * 70;
