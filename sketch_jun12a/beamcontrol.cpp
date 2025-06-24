@@ -2,11 +2,13 @@
 #include "beamcontrol.h"
 #include "PID.h"
 
-BeamControl::BeamControl(int _steppin, int _dirpin, int _potpin): pid(0,0,0){
+BeamControl::BeamControl(int _steppin, int _dirpin, int _potpin, int _enablepin): pid(0,0,0){
   steppin = _steppin;
   dirpin = _dirpin;
   potpin = _potpin;
+  enablepin = _enablepin;
   pinMode(potpin, INPUT);
+  pinMode(enablepin, OUTPUT);
 
   stepper = AccelStepper(AccelStepper::DRIVER, steppin, dirpin);
   stepper.setCurrentPosition(get_angle());
@@ -40,3 +42,11 @@ void BeamControl::update(float dt)
     stepper.runSpeed();
     //stepper.run();
   }
+
+void BeamControl::enable(){
+  digitalWrite(enablepin, 0);
+}
+
+void BeamControl::disable(){
+  digitalWrite(enablepin, 1);
+}

@@ -67,7 +67,7 @@ def poll_serial():
             
         except Exception as e:
             print(f"Error: {e}")
-    root.after(50, poll_serial)
+    root.after(10, poll_serial)
 
 poll_serial()
 root.mainloop()
